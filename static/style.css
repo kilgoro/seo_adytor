@@ -1,0 +1,96 @@
+/* styles.css */
+body.bg-image {
+    background-image: url('./img/background-images-seo.jpg'); /* Ścieżka do obrazu */
+    background-size: cover; /* Tło pokrywa cały ekran */
+    background-position: center; /* Wycentrowanie tła */
+    background-repeat: no-repeat; /* Brak powtarzania tła */
+    position: relative; /* Wymagane dla ::before */
+}
+
+body.bg-image::before {
+    content: ""; /* Wymagane dla ::before */
+    position: absolute; /* Nakładka zajmuje cały obszar body */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Ciemna nakładka z przezroczystością 50% */
+    z-index: 1; /* Nakładka powinna być pod zawartością strony */
+}
+.bg-image .flex {
+    position: relative;
+    z-index: 1;
+}
+/* Ustawienie zawartości strony nad nakładką */
+.content {
+    position: relative;
+    z-index: 2; /* Zawartość powinna być nad nakładką */
+}
+
+/* styles.css tabs */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-button {
+    padding: 15px 20px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.tab-button.active {
+    border-bottom: 2px solid #007bff;
+    color: #007bff;
+}
+
+.tab-button:hover {
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    margin-bottom: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+}
+
+.warning {
+    color: orange;
+}
