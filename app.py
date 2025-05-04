@@ -1,22 +1,33 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+import sys
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_session import Session
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urlsplit, urljoin
 import time
 import ssl
 import socket
+from datetime import datetime, timezone
+from OpenSSL import crypto
+import logging
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_key'  # Wymagane dla Flask-Login
+app.secret_key = 'super_secret_key'
 
-# Konfiguracja Flask-Login
+# Konfiguracja Flask-Session
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = './flask_session/'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+Session(app)
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Symulacja bazy danych użytkowników
-users = {'plyjak@studiofigura.com.pl': {'password': 'pip install lxml'}}
+users = {'plyjak@studiofigura.com.pl': {'password': 'AudytSEO2025!'}}
 
 class User(UserMixin):
     def __init__(self, username):
@@ -27,6 +38,12 @@ def load_user(username):
     if username in users:
         return User(username)
     return None
+
+# Ustaw domyślne kodowanie na UTF-8
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
+# Konfiguracja logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def audit_seo(url):
     result = {
@@ -58,15 +75,15 @@ def audit_seo(url):
         "robots_disallows": [],
         "sitemap_errors": [],
         "error": None,
-        "load_time": 0,
+        "load_time": 0.0,
         "resource_load_times": {},
         "images_without_alt": 0,
         "security": {
             "csp": False,
             "hsts": False,
             "ssl_valid": False,
-            "ssl_expires_in": None,
             "ssl_issuer": None,
+            "ssl_expires_in": None,
             "ssl_errors": []
         },
         "lazy_loading": {
@@ -75,10 +92,8 @@ def audit_seo(url):
             "iframe_count": 0,
             "iframe_lazy_count": 0
         },
-        "webp_images": {
-            "webp_count": 0,
-            "webp_percentage": 0
-        }
+        "webp_images": {},
+        "h1_present": False
     }
 
     try:
@@ -94,25 +109,31 @@ def audit_seo(url):
         }
 
         start_time = time.time()
-        response = requests.get(url, timeout=10, headers=headers)
-        response.raise_for_status()
-        result["load_time"] = time.time() - start_time
+        try:
+            response = requests.get(url, timeout=10, headers=headers, allow_redirects=True)
+            response.raise_for_status()
+            final_url = response.url  # Użyj końcowego URL po ewentualnych przekierowaniach
+            result["load_time"] = float(time.time() - start_time)
+            logging.info(f"Żądanie GET dla {url} zakończone sukcesem, status: {response.status_code}")
+        except requests.RequestException as e:
+            result["error"] = str(e)
+            result["load_time"] = 0.0
+            logging.error(f"Błąd żądania dla {url}: {e}")
+            return result
 
         soup = BeautifulSoup(response.text, 'html.parser')
-        parsed = urlparse(url)
+        parsed = urlparse(final_url)
 
         result["https"] = parsed.scheme == "https"
         result["title"] = soup.title.text.strip() if soup.title else "Brak"
         meta_desc = soup.find('meta', {'name': 'description'})
-        result["description"] = (
-            meta_desc['content'].strip()
-            if meta_desc and 'content' in meta_desc.attrs
-            else "Brak"
-        )
+        result["description"] = meta_desc['content'].strip() if meta_desc and 'content' in meta_desc.attrs else "Brak"
 
         for tag in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6'):
             headers = soup.find_all(tag)
-            result["headers"][tag] = [header.text.strip() for header in headers]
+            result["headers"][tag] = [header.text.strip() for header in headers if header.text.strip()]
+            if tag == 'h1' and headers:
+                result["h1_present"] = True
 
         base_url = f"{parsed.scheme}://{parsed.netloc}"
         for a in soup.find_all('a', href=True):
@@ -124,47 +145,54 @@ def audit_seo(url):
                 result["external_links"].append(full_url)
 
         all_links = result["internal_links"] + result["external_links"]
-        for link in all_links:
+        for link in all_links[:50]:
             try:
                 head = requests.head(link, timeout=5, allow_redirects=True, headers=headers)
                 result["link_statuses"][link] = head.status_code
             except Exception:
                 result["link_statuses"][link] = "Błąd"
 
-        if soup.find('link', rel=lambda r: r and 'icon' in r.lower()):
-            result["favicon"] = True
+        favicon_links = soup.find_all('link', rel=lambda r: r and 'icon' in r.lower())
+        result["favicon"] = bool(favicon_links)
 
         robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
-        robots = requests.get(robots_url, headers=headers)
-        result["robots_txt"] = robots.status_code == 200
-        if robots.status_code == 200:
-            for line in robots.text.splitlines():
-                if line.strip().lower().startswith("disallow:"):
-                    path = line.split(":", 1)[1].strip()
-                    result["robots_disallows"].append(path)
+        try:
+            robots = requests.get(robots_url, timeout=5, headers=headers)
+            result["robots_txt"] = robots.status_code == 200
+            if robots.status_code == 200:
+                for line in robots.text.splitlines():
+                    if line.strip().lower().startswith("disallow:"):
+                        path = line.split(":", 1)[1].strip()
+                        result["robots_disallows"].append(path)
+        except Exception as e:
+            result["robots_txt"] = False
+            logging.error(f"Błąd pobierania robots.txt dla {url}: {e}")
 
         sitemap_url = f"{parsed.scheme}://{parsed.netloc}/sitemap.xml"
-        sitemap = requests.get(sitemap_url, headers=headers)
-        result["sitemap_xml"] = (sitemap.status_code == 200)
-        result["sitemap_errors"] = []
+        try:
+            sitemap = requests.get(sitemap_url, timeout=5, headers=headers)
+            result["sitemap_xml"] = sitemap.status_code == 200
+            if sitemap.status_code == 200 and sitemap.text.strip().startswith('<?xml'):
+                soup_sitemap = BeautifulSoup(sitemap.text, 'lxml-xml')
+                loc_tags = soup_sitemap.find_all('loc')
+                for loc in loc_tags[:30]:
+                    link = loc.text.strip()
+                    try:
+                        r = requests.head(link, timeout=5, allow_redirects=True, headers=headers)
+                        if r.status_code >= 400:
+                            result["sitemap_errors"].append((link, r.status_code))
+                    except Exception as e:
+                        result["sitemap_errors"].append((link, 'Błąd'))
+                        logging.error(f"Błąd sprawdzania linku z sitemap.xml: {link}, {e}")
+        except Exception as e:
+            result["sitemap_xml"] = False
+            logging.error(f"Błąd pobierania sitemap.xml dla {url}: {e}")
 
-        if sitemap.status_code == 200 and sitemap.text.strip().startswith('<?xml'):
-            soup_sitemap = BeautifulSoup(sitemap.text, 'lxml-xml')
-            loc_tags = soup_sitemap.find_all('loc')
-            for loc in loc_tags[:30]:
-                link = loc.text.strip()
-                try:
-                    r = requests.head(link, timeout=5, allow_redirects=True, headers=headers)
-                    if r.status_code >= 400:
-                        result["sitemap_errors"].append((link, r.status_code))
-                except Exception:
-                    result["sitemap_errors"].append((link, 'Błąd'))
-
-        for tag in ['header','main','footer','article','section']:
+        for tag in ['header', 'main', 'footer', 'article', 'section']:
             if not soup.find(tag):
                 result["missing_tags"].append(tag)
 
-        for tag in ['section','article']:
+        for tag in ['section', 'article']:
             cnt = len(soup.find_all(tag))
             if cnt > 1:
                 result["extra_tags"].append(f"{tag} x {cnt}")
@@ -174,36 +202,44 @@ def audit_seo(url):
         for script in soup.find_all('script', src=True):
             if script['src'].startswith('http'):
                 result["js_files_count"] += 1
-                start_time = time.time()
-                requests.get(script['src'], timeout=10, headers=headers)
-                result["resource_load_times"][script['src']] = time.time() - start_time
+                try:
+                    start_time = time.time()
+                    requests.get(script['src'], timeout=5, headers=headers)
+                    result["resource_load_times"][script['src']] = time.time() - start_time
+                except Exception as e:
+                    result["resource_load_times"][script['src']] = "Błąd"
+                    logging.error(f"Błąd pobierania pliku JS: {script['src']}, {e}")
 
         for link in soup.find_all('link', href=True):
             if link['href'].endswith('.css') and link['href'].startswith('http'):
                 result["css_files_count"] += 1
-                start_time = time.time()
-                requests.get(link['href'], timeout=10, headers=headers)
-                result["resource_load_times"][link['href']] = time.time() - start_time
+                try:
+                    start_time = time.time()
+                    requests.get(link['href'], timeout=5, headers=headers)
+                    result["resource_load_times"][link['href']] = time.time() - start_time
+                except Exception as e:
+                    result["resource_load_times"][link['href']] = "Błąd"
+                    logging.error(f"Błąd pobierania pliku CSS: {link['href']}, {e}")
 
-        canonical = soup.find('link', rel='canonical')
-        result["canonical_url"] = canonical['href'] if canonical and 'href' in canonical.attrs else "Brak"
+        canonical_links = soup.find_all('link', rel='canonical')
+        result["canonical_url"] = canonical_links[0]['href'] if canonical_links and 'href' in canonical_links[0].attrs else "Brak"
 
-        for tag in ['og:title','og:description','og:image','og:url']:
+        for tag in ['og:title', 'og:description', 'og:image', 'og:url']:
             meta = soup.find('meta', property=tag)
             (result["open_graph_tags"] if meta else result["missing_og_tags"]).append(tag)
 
-        for tag in ['twitter:card','twitter:title','twitter:description','twitter:image']:
-            meta = soup.find('meta', attrs={'name':tag})
+        for tag in ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']:
+            meta = soup.find('meta', attrs={'name': tag})
             (result["twitter_tags"] if meta else result["missing_twitter_tags"]).append(tag)
 
         path = urlsplit(url).path
-        if any(ch in path for ch in ['?','=','&']):
+        if any(ch in path for ch in ['?', '=', '&']):
             result["friendly_url"] = False
 
-        if soup.find('meta', attrs={'name':'viewport'}):
-            result["viewport_meta_tag"] = True
+        viewport_meta = soup.find('meta', attrs={'name': 'viewport'})
+        result["viewport_meta_tag"] = bool(viewport_meta)
 
-        weak = ['kliknij tutaj','tutaj','więcej','czytaj','sprawdź','kliknij','czytaj więcej']
+        weak = ['kliknij tutaj', 'tutaj', 'więcej', 'czytaj', 'sprawdź', 'kliknij', 'czytaj więcej']
         for a in soup.find_all('a', href=True):
             txt = a.get_text(strip=True).lower()
             if not txt:
@@ -211,10 +247,7 @@ def audit_seo(url):
             elif txt in weak:
                 result["weak_anchors_count"] += 1
 
-        result["images_without_alt"] = 0
-        for img in soup.find_all('img'):
-            if not img.get('alt'):
-                result["images_without_alt"] += 1
+        result["images_without_alt"] = sum(1 for img in soup.find_all('img') if not img.get('alt'))
 
         result["security"]["csp"] = 'content-security-policy' in response.headers
         result["security"]["hsts"] = 'strict-transport-security' in response.headers
@@ -222,28 +255,57 @@ def audit_seo(url):
         if parsed.scheme == "https":
             try:
                 context = ssl.create_default_context()
-                with socket.create_connection((parsed.netloc, 443)) as sock:
+                with socket.create_connection((parsed.netloc, 443), timeout=5) as sock:
                     with context.wrap_socket(sock, server_hostname=parsed.netloc) as ssock:
-                        cert = ssock.getpeercert()
-                        result["security"]["ssl_valid"] = True
-                        result["security"]["ssl_issuer"] = dict(x[0][1] for x in ssl._ssl._test_decode_cert(cert))['issuer']
-                        result["security"]["ssl_expires_in"] = ssl._ssl._test_decode_cert(cert)[0][0][9]
+                        cert = ssock.getpeercert(binary_form=True)
+                        x509 = crypto.load_certificate(crypto.FILETYPE_ASN1, cert)
+                        issuer = x509.get_issuer()
+                        result["security"]["ssl_issuer"] = issuer.get_components()[-1][-1].decode('utf-8')
+                        expiry_date = datetime.strptime(x509.get_notAfter().decode('ascii'), '%Y%m%d%H%M%SZ')
+                        result["security"]["ssl_expires_in"] = expiry_date.strftime('%Y-%m-%d %H:%M:%S')
+                        now = datetime.utcnow()
+                        result["security"]["ssl_valid"] = expiry_date > now
+                        if not result["security"]["ssl_valid"]:
+                            result["security"]["ssl_errors"].append("Certyfikat wygasł")
+            except ssl.SSLError as ssl_err:
+                result["security"]["ssl_valid"] = False
+                result["security"]["ssl_errors"].append(f"Błąd SSL: {ssl_err}")
+                logging.error(f"Błąd SSL dla {url}: {ssl_err}")
             except Exception as e:
-                result["security"]["ssl_errors"].append(str(e))
+                result["security"]["ssl_valid"] = False
+                result["security"]["ssl_errors"].append(f"Błąd: {e}")
+                logging.error(f"Błąd podczas sprawdzania certyfikatu SSL dla {url}: {e}")
         else:
             result["security"]["ssl_valid"] = False
+            result["security"]["ssl_errors"].append("Strona nie używa HTTPS")
 
         result["lazy_loading"]["img_count"] = len(soup.find_all('img'))
         result["lazy_loading"]["img_lazy_count"] = len(soup.find_all('img', loading="lazy"))
         result["lazy_loading"]["iframe_count"] = len(soup.find_all('iframe'))
         result["lazy_loading"]["iframe_lazy_count"] = len(soup.find_all('iframe', loading="lazy"))
 
-        result["webp_images"]["webp_count"] = len([img for img in soup.find_all('img') if 'src' in img.attrs and img['src'].lower().endswith('.webp')])
-        if result["webp_images"]["webp_count"] > 0:
-            result["webp_images"]["webp_percentage"] = round((result["webp_images"]["webp_count"] / result["lazy_loading"]["img_count"]) * 100, 2)
+        image_extensions = [".webp", ".jpg", ".png"]
+        image_counts = {ext: 0 for ext in image_extensions}
+        total_images = result["lazy_loading"]["img_count"]
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            if src:
+                for ext in image_extensions:
+                    if src.lower().endswith(ext):
+                        image_counts[ext] += 1
+                        break
+        result["webp_images"] = {
+            ext: {
+                "count": count,
+                "percentage": round((count / total_images * 100), 2) if total_images > 0 else 0
+            } for ext, count in image_counts.items()
+        }
 
+        logging.info(f"Audyt zakończony dla {url}, title: {result['title']}")
     except Exception as e:
         result["error"] = str(e)
+        result["load_time"] = 0.0
+        logging.error(f"Błąd ogólny w audit_seo dla {url}: {e}")
 
     return result
 
@@ -253,31 +315,74 @@ def login():
         try:
             username = request.form['username']
             password = request.form['password']
-
             if username in users and users[username]['password'] == password:
                 user = User(username)
                 login_user(user)
-                flash("Logowanie udane!", "success")
+                logging.info(f"Użytkownik {username} zalogowany pomyślnie.")
                 return redirect(url_for('index'))
             else:
                 flash("Niepoprawna nazwa użytkownika lub hasło.", "error")
+                logging.warning(f"Nieudana próba logowania dla użytkownika {username}.")
         except KeyError as e:
             flash(f"Brakujące dane: {e}", "error")
+            logging.error(f"Błąd podczas logowania: {e}")
     return render_template('login.html')
 
-@app.route('/logout')
-@login_required
+@app.route('/logout', methods=['GET', 'POST'])
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+    session.pop('user_id', None)  # Usuń dane użytkownika z sesji
+    session.clear()  # Opcjonalnie: wyczyść całą sesję
+    return redirect(url_for('login'))  # Przekieruj na stronę logowania
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
     if request.method == 'POST':
-        seo_data = audit_seo(request.form['url'])
-        return render_template('report.html', seo_data=seo_data)
-    return render_template('index.html')
+        url = request.form.get('url')
+        if not url:
+            return jsonify({"error": "Brak adresu URL"}), 400
+
+        # Czyszczenie poprzednich danych z sesji
+        if 'seo_data' in session:
+            logging.info(f"Usuwanie starych danych sesji dla: {session['seo_data']['url']}")
+            session.pop('seo_data')
+
+        seo_data = audit_seo(url)
+        logging.info(f"Nowe dane audytu dla: {url}, title: {seo_data['title']}")
+        if seo_data.get('error'):
+            logging.error(f"Błąd audytu: {seo_data['error']}")
+            return jsonify({"error": seo_data['error']}), 500
+
+        # Zapisanie nowych danych do sesji
+        session['seo_data'] = seo_data
+        session.modified = True
+        logging.info(f"Zapisano w sesji: {session['seo_data']['url']}, title: {seo_data['title']}")
+        return jsonify({"status": "success"}), 200
+
+    response = render_template('index.html')
+    response = app.make_response(response)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/report')
+@login_required
+def report():
+    # Sprawdzanie, czy dane istnieją w sesji
+    seo_data = session.get('seo_data', None)
+    if not seo_data:
+        logging.error("Brak danych SEO w sesji!")
+        flash('Brak danych audytu. Wykonaj audyt ponownie.', 'error')
+        return redirect(url_for('index'))
+
+    logging.info(f"Generowanie raportu dla: {seo_data['url']}, title: {seo_data['title']}")
+    response = render_template('report.html', seo_data=seo_data)
+    response = app.make_response(response)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
