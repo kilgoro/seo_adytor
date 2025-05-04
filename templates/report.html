@@ -3,399 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <title>Wyniki audytu SEO</title>
-    <link href="/static/style.css" rel="stylesheet"> <!-- Podłącz plik CSS -->
-
+    <link href="/static/style.css" rel="stylesheet">
+    <link href="/static/footer.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/static/logo/favicon-onpageIQ.svg">
 </head>
-<body>
-    <h1>🔍 Audyt SEO dla: {{ seo_data.url }}</h1>
-
-    {% if seo_data.error %}
-        <p class="error">❌ Błąd: {{ seo_data.error }}</p>
-    {% else %}
-
-    <!-- Zakładki -->
-    <div class="tabs">
-        <button class="tab-button active" data-tab="basic-info">Podstawowe informacje</button>
-        <button class="tab-button" data-tab="headers">Nagłówki</button>
-        <button class="tab-button" data-tab="canonical">Canonical URL</button>
-        <button class="tab-button" data-tab="friendly-links">Przyjazne linki</button>
-        <button class="tab-button" data-tab="responsiveness">Responsywność</button>
-        <button class="tab-button" data-tab="links">Linki</button>
-        <button class="tab-button" data-tab="structural-files">Pliki strukturalne</button>
-        <button class="tab-button" data-tab="semantic-structure">Struktura semantyczna</button>
-        <button class="tab-button" data-tab="page-size">Rozmiar strony</button>
-        <button class="tab-button" data-tab="external-files">Zewnętrzne pliki</button>
-    </div>
-    <div class="tabs">
-        <button class="tab-button" data-tab="social-media">Social Media</button>
-        <button class="tab-button" data-tab="anchor-text">Linki bez wartościowego anchor textu</button>
-        <button class="tab-button" data-tab="http-statuses">Statusy HTTP linków</button>
-        <button class="tab-button" data-tab="robots-txt">Analiza robots.txt</button>
-        <button class="tab-button" data-tab="sitemap">Analiza sitemap.xml</button>
-        <button class="tab-button" data-tab="load-time">Czas ładowania strony</button>
-        <button class="tab-button" data-tab="img-checker">Obrazki bez atrybutu alt</button>
-        <button class="tab-button" data-tab="lazy-loading">Lazy Loading</button>
-        <button class="tab-button" data-tab="webp-images">Użycie formatu WebP</button>
-        <button class="tab-button" data-tab="security">Bezpieczeństwo</button>
-    </div>
-
-    <!-- Zawartość zakładek -->
-    <div class="tab-content active" id="basic-info">
-        <div class="section">
-            <h2>Podstawowe informacje</h2>
-            <p><span class="label">Tytuł strony:</span> {{ seo_data.title }}</p>
-            <p><span class="label">Meta opis:</span> {{ seo_data.description }}</p>
-            <p><span class="label">Nagłówek H1:</span> {{ seo_data.h1 }}</p>
-            <p><span class="label">HTTPS:</span> {{ "Tak" if seo_data.https else "Nie" }}</p>
-            <p><span class="label">Favicon:</span> {{ "Obecna" if seo_data.favicon else "Brak" }}</p>
+<body class="bg-custom-dark text-gray-900 flex">
+    <!-- Sidemenu -->
+    <div class="sidemenu w-64 h-screen sidemenu-background text-white flex flex-col p-4 overflow-y-auto">
+        <div class="mb-6">
+            <img src="/static/logo/logo-onpageiq.svg" alt="Logo" class="h-8 w-auto">
         </div>
-    </div>
-
-    <div class="tab-content" id="headers">
-        <div class="section">
-            <h2>Nagłówki</h2>
-    {% for tag, headers in seo_data.headers.items() %}
-        <h3>{{ tag.upper() }}</h3>
-        {% if headers %}
+        <nav class="flex-1">
             <ul>
-                {% for header in headers %}
-                    <li>{{ header }}</li>
-                {% endfor %}
+                <li class="mb-2">
+                    <button class="sidemenu-item active" data-tab="basic-info">
+                        Podstawowe informacje
+                    </button>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Optymalizacja Treści
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="headers">
+                                Nagłówki
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="friendly-links">
+                                Przyjazne linki
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="anchor-text">
+                                Linki bez wartościowego anchor textu
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Struktura Strony
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="canonical">
+                                Canonical URL
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="semantic-structure">
+                                Struktura semantyczna
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="page-size">
+                                Rozmiar strony
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="external-files">
+                                Zewnętrzne pliki
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Wydajność i Bezpieczeństwo
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="responsiveness">
+                                Responsywność
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="load-time">
+                                Czas ładowania strony
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="lazy-loading">
+                                Lazy Loading
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="webp-images">
+                                Użycie formatu WebP
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="security">
+                                Bezpieczeństwo
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Linki i Pliki
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="links">
+                                Linki
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="structural-files">
+                                Pliki strukturalne
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="http-statuses">
+                                Statusy HTTP linków
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Audyt SEO Techniczne
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="robots-txt">
+                                Analiza robots.txt
+                            </button>
+                        </li>
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="sitemap">
+                                Analiza sitemap.xml
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item has-submenu" onclick="toggleSubmenu(this)">
+                        Media i Grafika
+                    </button>
+                    <ul class="submenu">
+                        <li class="mb-2">
+                            <button class="sidemenu-item" data-tab="img-checker">
+                                Obrazki bez atrybutu alt
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <button class="sidemenu-item" data-tab="social-media">
+                        Social Media
+                    </button>
+                </li>
             </ul>
-        {% else %}
-            <p>Brak</p>
-        {% endif %}
-    {% endfor %}
-        </div>
+        </nav>
     </div>
+    
+    
 
-    <div class="tab-content" id="canonical">
-        <div class="section">
-            <h2>Canonical URL</h2>
-            {% if seo_data.canonical_url != "Brak" %}
-                <p>✅ Znaleziono canonical: <code>{{ seo_data.canonical_url }}</code></p>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen">
+        <main class="container mx-auto p-4 flex-1 overflow-y-auto">
+            <h1 class="text-3xl font-bold mb-4">Audyt SEO dla:<br>{{ seo_data.url }}</h1>
+
+            {% if seo_data.error %}
+                <p class="text-red-500 mb-4">❌ Błąd: {{ seo_data.error }}</p>
             {% else %}
-                <p>❌ Brak znacznika <code>&lt;link rel="canonical"&gt;</code></p>
-            {% endif %}
-        </div>
-    </div>
 
-    <div class="tab-content" id="friendly-links">
-        <div class="section">
-            <h2>Przyjazne linki</h2>
-            {% if seo_data.friendly_url %}
-                <p>✅ URL jest przyjazny SEO (brak dziwnych znaków).</p>
-            {% else %}
-                <p>❌ URL zawiera parametry (np. <code>?id=123</code>) - warto używać przyjaznych URL-ów, np. <code>nazwa-produktu</code>.</p>
-            {% endif %}
-        </div>
-    </div>
+            <!-- Zawartość zakładek -->
+            <div class="tab-content block" id="basic-info">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Podstawowe informacje</h2>
+                    <p><span class="label font-semibold">Tytuł strony:</span> {{ seo_data.title }}</p>
+                    <p><span class="label font-semibold">Meta opis:</span> {{ seo_data.description }}</p>
+                    <p><span class="label font-semibold">Nagłówek H1:</span> {{ "Tak" if seo_data.h1_present else "Nie" }}</p>
+                    <p><span class="label font-semibold">HTTPS:</span> {{ "Tak" if seo_data.https else "Nie" }}</p>
+                    <p><span class="label font-semibold">Favicon:</span> {{ "Obecna" if seo_data.favicon else "Brak" }}</p>
+                </div>
+            </div>
 
-    <div class="tab-content" id="responsiveness">
-        <div class="section">
-            <h2>Responsywność</h2>
-            {% if seo_data.viewport_meta_tag %}
-                <p>✅ Strona zawiera tag <code>&lt;meta name="viewport"&gt;</code>, co zapewnia jej responsywność na urządzeniach mobilnych.</p>
-            {% else %}
-                <p>❌ Brak tagu <code>&lt;meta name="viewport"&gt;</code>. Strona może nie być responsywna na urządzeniach mobilnych.</p>
-            {% endif %}
-            <p>Sprawdź responsywność strony na urządzeniach mobilnych w <a href="https://search.google.com/test/mobile-friendly" target="_blank" rel="noopener noreferrer">Google Mobile-Friendly Test</a>.</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="links">
-        <div class="section">
-            <h2>Linki</h2>
-            <p><span class="label">Linki wewnętrzne:</span> {{ seo_data.internal_links|length }}</p>
-            <p><span class="label">Linki zewnętrzne:</span> {{ seo_data.external_links|length }}</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="structural-files">
-        <div class="section">
-            <h2>Pliki strukturalne</h2>
-            <p><span class="label">robots.txt:</span> {{ "Obecny" if seo_data.robots_txt else "Brak" }}</p>
-            <p><span class="label">sitemap.xml:</span> {{ "Obecny" if seo_data.sitemap_xml else "Brak" }}</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="semantic-structure">
-        <div class="section">
-            <h2>Struktura semantyczna</h2>
-            <h3>Brakujące tagi:</h3>
-            <ul>
-                {% for tag in seo_data.missing_tags %}
-                    <li>{{ tag }}</li>
-                {% endfor %}
-            </ul>
-            <h3>Tagi nadmiarowe:</h3>
-            <ul>
-                {% for tag in seo_data.extra_tags %}
-                    <li>{{ tag }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="tab-content" id="page-size">
-        <div class="section">
-            <h2>Rozmiar strony</h2>
-            <p><span class="label">Rozmiar HTML:</span> {{ seo_data.html_size_kb | round(2) }} KB</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="external-files">
-        <div class="section">
-            <h2>Zewnętrzne pliki</h2>
-            <p><span class="label">Pliki JavaScript:</span> {{ seo_data.js_files_count }}</p>
-            <p><span class="label">Pliki CSS:</span> {{ seo_data.css_files_count }}</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="social-media">
-        <div class="section">
-            <h2>Social Media: Open Graph i Twitter Cards</h2>
-            <h3>Open Graph:</h3>
-            {% if seo_data.open_graph_tags %}
-                <ul>
-                    {% for tag in seo_data.open_graph_tags %}
-                        <li>✅ {{ tag }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Brak tagów Open Graph.</p>
-            {% endif %}
-            {% if seo_data.missing_og_tags %}
-                <p><strong>❌ Brakujące OG tagi:</strong> {{ seo_data.missing_og_tags | join(', ') }}</p>
-            {% endif %}
-            <h3>Twitter Cards:</h3>
-            {% if seo_data.twitter_tags %}
-                <ul>
-                    {% for tag in seo_data.twitter_tags %}
-                        <li>✅ {{ tag }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Brak tagów Twitter Cards.</p>
-            {% endif %}
-            {% if seo_data.missing_twitter_tags %}
-                <p><strong>❌ Brakujące Twitter tagi:</strong> {{ seo_data.missing_twitter_tags | join(', ') }}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="tab-content" id="anchor-text">
-        <div class="section">
-            <h2>Linki bez wartościowego anchor textu</h2>
-            <ul>
-                <li>🔗 Linki z nieoptymalnym tekstem (np. "kliknij tutaj", "więcej"): <strong>{{ seo_data.weak_anchors_count }}</strong></li>
-                <li>🚫 Linki bez tekstu (puste lub tylko ikony): <strong>{{ seo_data.empty_anchors_count }}</strong></li>
-            </ul>
-            {% if seo_data.weak_anchors_count == 0 and seo_data.empty_anchors_count == 0 %}
-                <p>✅ Wszystkie linki zawierają wartościowy, opisowy anchor text.</p>
-            {% else %}
-                <p>❌ Niektóre linki mogą wymagać poprawy pod kątem SEO i dostępności.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="tab-content" id="http-statuses">
-        <div class="section">
-            <h2>Statusy HTTP linków</h2>
-            {% if seo_data.link_statuses %}
-                <table border="1" cellpadding="5" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Adres URL</th>
-                            <th>Status HTTP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for link, status in seo_data.link_statuses.items() %}
-                            <tr>
-                                <td><a href="{{ link }}" target="_blank">{{ link }}</a></td>
-                                <td>
-                                    {% if status == 200 %}
-                                        <span style="color: green;">{{ status }}</span>
-                                    {% elif status in [301, 302] %}
-                                        <span style="color: orange;">{{ status }}</span>
-                                    {% elif status == 'Błąd' or (status is number and status >= 400) %}
-                                        <span style="color: red;">{{ status }}</span>
+            <div class="tab-content hidden" id="headers">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Nagłówki</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-2 px-4 border-b border-gray-300 text-left">Tag</th>
+                                    <th class="py-2 px-4 border-b border-gray-300 text-left">Nagłówek</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tag, headers in seo_data.headers.items() %}
+                                    {% if headers %}
+                                        {% for header in headers %}
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="py-2 px-4 border-b border-gray-200">{{ tag.upper() }}</td>
+                                                <td class="py-2 px-4 border-b border-gray-200">{{ header }}</td>
+                                            </tr>
+                                        {% endfor %}
                                     {% else %}
-                                        {{ status }}
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="py-2 px-4 border-b border-gray-200">{{ tag.upper() }}</td>
+                                            <td class="py-2 px-4 border-b border-gray-200">Brak</td>
+                                        </tr>
                                     {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Brak danych o statusach linków.</p>
-            {% endif %}
-        </div>
-    </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    <div class="tab-content" id="robots-txt">
-        <div class="section">
-            <h2>Analiza robots.txt</h2>
-            {% if seo_data.robots_txt %}
-                <p>✅ Plik <code>robots.txt</code> został znaleziony.</p>
-                {% if seo_data.robots_disallows %}
-                    <p><strong>Disallow:</strong></p>
-                    <ul>
-                        {% for path in seo_data.robots_disallows %}
-                            <li>
-                                <code>Disallow: {{ path }}</code>
-                                {% if path == '/' %}
-                                    <span class="error">❌ Cała strona jest zablokowana dla robotów!</span>
-                                {% elif path.startswith('/js') or path.startswith('/css') %}
-                                    <span class="warning">⚠️ Blokowane mogą być istotne zasoby (CSS/JS)</span>
-                                {% endif %}
-                            </li>
+            <div class="tab-content hidden" id="canonical">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Canonical URL</h2>
+                    {% if seo_data.canonical_url != "Brak" %}
+                        <p>✅ Znaleziono canonical: <code>{{ seo_data.canonical_url }}</code></p>
+                    {% else %}
+                        <p>❌ Brak znacznika <code><link rel="canonical"></code></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="friendly-links">
+                <div class="ssection mb-4">
+                    <h2 class="text-xl font-bold mb-2">Przyjazne linki</h2>
+                    {% if seo_data.friendly_url %}
+                        <p>✅ URL jest przyjazny SEO (brak dziwnych znaków).</p>
+                    {% else %}
+                        <p>❌ URL zawiera parametry (np. <code>?id=123</code>) - warto używać przyjaznych URL-ów, np. <code>nazwa-produktu</code>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="responsiveness">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Responsywność</h2>
+                    {% if seo_data.viewport_meta_tag %}
+                        <p>✅ Strona zawiera tag <code><meta name="viewport"></code>, co zapewnia jej responsywność na urządzeniach mobilnych.</p>
+                    {% else %}
+                        <p>❌ Brak tagu <code><meta name="viewport"></code>. Strona może nie być responsywna na urządzeniach mobilnych.</p>
+                    {% endif %}
+                    <p>Sprawdź responsywność strony na urządzeniach mobilnych w <a href="https://search.google.com/test/mobile-friendly" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline">Google Mobile-Friendly Test</a>.</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="links">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Linki</h2>
+                    <p><span class="label font-semibold">Linki wewnętrzne:</span> {{ seo_data.internal_links|length }}</p>
+                    <p><span class="label font-semibold">Linki zewnętrzne:</span> {{ seo_data.external_links|length }}</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="structural-files">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Pliki strukturalne</h2>
+                    <p><span class="label font-semibold">robots.txt:</span> {{ "Obecny" if seo_data.robots_txt else "Brak" }}</p>
+                    <p><span class="label font-semibold">sitemap.xml:</span> {{ "Obecny" if seo_data.sitemap_xml else "Brak" }}</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="semantic-structure">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Struktura semantyczna</h2>
+                    <h3 class="text-lg font-semibold">Brakujące tagi:</h3>
+                    <ul class="list-disc list-inside">
+                        {% for tag in seo_data.missing_tags %}
+                            <li>{{ tag }}</li>
                         {% endfor %}
                     </ul>
-                {% else %}
-                    <p>✅ Brak zakazów w robots.txt</p>
-                {% endif %}
-            {% else %}
-                <p>❌ Nie znaleziono pliku <code>robots.txt</code>.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="tab-content" id="sitemap">
-        <div class="section">
-            <h2>Analiza sitemap.xml</h2>
-            {% if seo_data.sitemap_xml %}
-                <p>✅ Plik <code>sitemap.xml</code> został znaleziony.</p>
-                {% if seo_data.sitemap_errors %}
-                    <p><strong>❌ Błędne linki w sitemap:</strong></p>
-                    <ul>
-                        {% for link, code in seo_data.sitemap_errors %}
-                            <li><a href="{{ link }}" target="_blank">{{ link }}</a> –
-                                {% if code == 'Błąd' %}
-                                    <span style="color: red;">Błąd połączenia</span>
-                                {% else %}
-                                    <span style="color: red;">Status: {{ code }}</span>
-                                {% endif %}
-                            </li>
+                    <h3 class="text-lg font-semibold">Tagi nadmiarowe:</h3>
+                    <ul class="list-disc list-inside">
+                        {% for tag in seo_data.extra_tags %}
+                            <li>{{ tag }}</li>
                         {% endfor %}
                     </ul>
-                {% else %}
-                    <p>✅ Wszystkie sprawdzone linki w sitemap są dostępne.</p>
-                {% endif %}
-            {% else %}
-                <p>❌ Nie znaleziono pliku <code>sitemap.xml</code>.</p>
-            {% endif %}
-        </div>
-    </div>
+                </div>
+            </div>
 
-    <div class="tab-content" id="load-time">
-        <div class="section">
-            <h2>Czas ładowania strony</h2>
-            <p><span class="label">Czas ładowania strony głównej:</span> {{ seo_data.load_time|round(2) }} sekund</p>
-            <h3>Czas ładowania zasobów:</h3>
-            {% if seo_data.resource_load_times %}
-                <table border="1" cellpadding="5" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Zasób</th>
-                            <th>Czas ładowania (sekundy)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for resource, load_time in seo_data.resource_load_times.items() %}
-                            <tr>
-                                <td><a href="{{ resource }}" target="_blank">{{ resource }}</a></td>
-                                <td>{{ load_time|round(2) }}</td>
-                            </tr>
+            <div class="tab-content hidden" id="page-size">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Rozmiar strony</h2>
+                    <p><span class="label font-semibold">Rozmiar HTML:</span> {{ seo_data.html_size_kb | round(2) }} KB</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="external-files">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Zewnętrzne pliki</h2>
+                    <p><span class="label font-semibold">Pliki JavaScript:</span> {{ seo_data.js_files_count }}</p>
+                    <p><span class="label font-semibold">Pliki CSS:</span> {{ seo_data.css_files_count }}</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="social-media">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Social Media: Open Graph i Twitter Cards</h2>
+                    <h3 class="text-lg font-semibold">Open Graph:</h3>
+                    {% if seo_data.open_graph_tags %}
+                        <ul class="list-disc list-inside">
+                            {% for tag in seo_data.open_graph_tags %}
+                                <li>✅ {{ tag }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Brak tagów Open Graph.</p>
+                    {% endif %}
+                    {% if seo_data.missing_og_tags %}
+                        <p><strong>❌ Brakujące OG tagi:</strong> {{ seo_data.missing_og_tags | join(', ') }}</p>
+                    {% endif %}
+                    <h3 class="text-lg font-semibold">Twitter Cards:</h3>
+                    {% if seo_data.twitter_tags %}
+                        <ul class="list-disc list-inside">
+                            {% for tag in seo_data.twitter_tags %}
+                                <li>✅ {{ tag }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Brak tagów Twitter Cards.</p>
+                    {% endif %}
+                    {% if seo_data.missing_twitter_tags %}
+                        <p><strong>❌ Brakujące Twitter tagi:</strong> {{ seo_data.missing_twitter_tags | join(', ') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="anchor-text">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Linki bez wartościowego anchor textu</h2>
+                    <ul class="list-disc list-inside">
+                        <li>🔗 Linki z nieoptymalnym tekstem (np. "kliknij tutaj", "więcej"): <strong>{{ seo_data.weak_anchors_count }}</strong></li>
+                        <li>🚫 Linki bez tekstu (puste lub tylko ikony): <strong>{{ seo_data.empty_anchors_count }}</strong></li>
+                    </ul>
+                    {% if seo_data.weak_anchors_count == 0 and seo_data.empty_anchors_count == 0 %}
+                        <p>✅ Wszystkie linki zawierają wartościowy, opisowy anchor text.</p>
+                    {% else %}
+                        <p>❌ Niektóre linki mogą wymagać poprawy pod kątem SEO i dostępności.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="http-statuses">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Statusy HTTP linków</h2>
+                    {% if seo_data.link_statuses %}
+                        <table class="min-w-full bg-white border border-gray-300">
+                            <thead>
+                                <tr>
+                                    <th class="py-2 px-4 border-b"> Adres URL</th>
+                                    <th class="py-2 px-4 border-b">Status HTTP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link, status in seo_data.link_statuses.items() %}
+                                    <tr>
+                                        <td class="py-2 px-4 border-b"><a href="{{ link }}" target="_blank" class="text-blue-500 underline">{{ link }}</a></td>
+                                        <td class="py-2 px-4 border-b">
+                                            {% if status == 200 %}
+                                                <span class="text-green-500">{{ status }}</span>
+                                            {% elif status in [301, 302] %}
+                                                <span class="text-orange-500">{{ status }}</span>
+                                            {% elif status == 'Błąd' or (status is number and status >= 400) %}
+                                                <span class="text-red-500">{{ status }}</span>
+                                            {% else %}
+                                                {{ status }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Brak danych o statusach linków.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="robots-txt">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Analiza robots.txt</h2>
+                    {% if seo_data.robots_txt %}
+                        <p>✅ Plik <code>robots.txt</code> został znaleziony.</p>
+                        {% if seo_data.robots_disallows %}
+                            <p><strong>Disallow:</strong></p>
+                            <ul class="list-disc list-inside">
+                                {% for path in seo_data.robots_disallows %}
+                                    <li>
+                                        <code>Disallow: {{ path }}</code>
+                                        {% if path == '/' %}
+                                            <span class="text-red-500">❌ Cała strona jest zablokowana dla robotów!</span>
+                                        {% elif path.startswith('/js') or path.startswith('/css') %}
+                                            <span class="text-yellow-500">⚠️ Blokowane mogą być istotne zasoby (CSS/JS)</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>✅ Brak zakazów w robots.txt</p>
+                        {% endif %}
+                    {% else %}
+                        <p>❌ Nie znaleziono pliku <code>robots.txt</code>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="sitemap">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Analiza sitemap.xml</h2>
+                    {% if seo_data.sitemap_xml %}
+                        <p>✅ Plik <code>sitemap.xml</code> został znaleziony.</p>
+                        {% if seo_data.sitemap_errors %}
+                            <p><strong>❌ Błędne linki w sitemap:</strong></p>
+                            <ul class="list-disc list-inside">
+                                {% for link, code in seo_data.sitemap_errors %}
+                                    <li><a href="{{ link }}" target="_blank" class="text-blue-500 underline">{{ link }}</a> –
+                                        {% if code == 'Błąd' %}
+                                            <span class="text-red-500">Błąd połączenia</span>
+                                        {% else %}
+                                            <span class="text-red-500">Status: {{ code }}</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>✅ Wszystkie sprawdzone linki w sitemap są dostępne.</p>
+                        {% endif %}
+                    {% else %}
+                        <p>❌ Nie znaleziono pliku <code>sitemap.xml</code>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="load-time">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Czas ładowania strony</h2>
+                    <p><span class="label font-semibold">Czas ładowania strony głównej:</span> {{ seo_data.load_time|round(2) }} sekund</p>
+                    <h3 class="text-lg font-semibold">Czas ładowania zasobów:</h3>
+                    {% if seo_data.resource_load_times %}
+                        <table class="min-w-full bg-white border border-gray-300">
+                            <thead>
+                                <tr>
+                                    <th class="py-2 px-4 border-b">Zasób</th>
+                                    <th class="py-2 px-4 border-b">Czas ładowania (sekundy)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource, load_time in seo_data.resource_load_times.items() %}
+                                    <tr>
+                                        <td class="py-2 px-4 border-b"><a href="{{ resource }}" target="_blank" class="text-blue-500 underline">{{ resource }}</a></td>
+                                        <td class="py-2 px-4 border-b">{{ load_time|round(2)|float }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Brak danych o czasach ładowania zasobów.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="img-checker">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Obrazki bez atrybutu alt</h2>
+                    {% if seo_data.images_without_alt == 0 %}
+                        <p>✅ Wszystkie obrazki mają atrybut alt.</p>
+                    {% else %}
+                        <p>❌ Liczba obrazków bez atrybutu alt: {{ seo_data.images_without_alt }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="lazy-loading">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Lazy Loading</h2>
+                    <p><span class="label font-semibold">Liczba obrazków:</span> {{ seo_data.lazy_loading.img_count }}</p>
+                    <p><span class="label font-semibold">Obrazki z Lazy Loading:</span> {{ seo_data.lazy_loading.img_lazy_count }}</p>
+                    <p><span class="label font-semibold">Liczba iframe:</span> {{ seo_data.lazy_loading.iframe_count }}</p>
+                    <p><span class="label font-semibold">Iframe z Lazy Loading:</span> {{ seo_data.lazy_loading.iframe_lazy_count }}</p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="webp-images">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Użycie formatów obrazów</h2>
+                    {% if seo_data.webp_images %}
+                        {% for ext, data in seo_data.webp_images.items() %}
+                            <p>
+                                <span class="label font-semibold">Liczba obrazków {{ ext[1:] | upper }}:</span>
+                                {{ data.count }}
+                            </p>
+                            <p>
+                                <span class="label font-semibold">Procent obrazków {{ ext[1:] | upper }}:</span>
+                                {{ data.percentage }}%
+                            </p>
                         {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Brak danych o czasach ładowania zasobów.</p>
+                        {% if seo_data.webp_images[".webp"]["count"] == 0 %}
+                            <p>❌ Brak obrazków w formacie WebP. Rozważ użycie tego formatu, aby przyspieszyć ładowanie strony.</p>
+                        {% else %}
+                            <p>✅ Znaleziono obrazki w formacie WebP, co jest dobre dla wydajności strony.</p>
+                        {% endif %}
+                    {% else %}
+                        <p>Brak danych o obrazkach.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="security">
+                <div class="section mb-4">
+                    <h2 class="text-xl font-bold mb-2">Bezpieczeństwo</h2>
+                    <p><span class="label font-semibold">Content Security Policy (CSP):</span> {{ "Tak" if seo_data.security.csp else "Nie" }}</p>
+                    <p><span class="label font-semibold">HTTP Strict Transport Security (HSTS):</span> {{ "Tak" if seo_data.security.hsts else "Nie" }}</p>
+                    <p><span class="label font-semibold">Certyfikat SSL:</span> {{ "Ważny" if seo_data.security.ssl_valid else "Nieważny lub brak" }}</p>
+                    <p><span class="label font-semibold">Wystawca certyfikatu:</span> {{ seo_data.security.ssl_issuer | default("Brak") }}</p>
+                    <p><span class="label font-semibold">Certyfikat ważny do:</span> {{ seo_data.security.ssl_expires_in | default("Brak") }}</p>
+                    {% if seo_data.security.ssl_errors %}
+                        <p><span class="label font-semibold">Błędy SSL:</span></p>
+                        <ul class="list-disc list-inside text-red-500">
+                            {% for error in seo_data.security.ssl_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p><span class="label font-semibold">Błędy SSL:</span> Brak</p>
+                    {% endif %}
+                    {% if seo_data.security.ssl_valid %}
+                        <p class="text-green-500">✅ Strona jest zabezpieczona ważnym certyfikatem SSL.</p>
+                    {% else %}
+                        <p class="text-red-500">❌ Strona nie jest odpowiednio zabezpieczona. Rozważ włączenie HTTPS i ważnego certyfikatu SSL.</p>
+                    {% endif %}
+                </div>
+            </div>
+
             {% endif %}
-        </div>
+
+            <p class="mt-4">
+                <a href="/" class="custom-link custom-link2">Wróć do formularza</a>
+            </p>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-text">
+                <p>
+                    © <strong>PixelCraft – Patryk Łyjak</strong>
+                </p>
+            </div>
+            <div class="footer-icons">
+                <!-- Facebook -->
+                <a href="#" class="footer-icon" aria-label="Facebook">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.348C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.98c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.242h-1.92c-1.504 0-1.795.715-1.795 1.763v2.31h3.589l-.467 3.622h-3.12V24h6.116c.733 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z"/>
+                    </svg>
+                </a>
+                <!-- GitHub -->
+                <a href="#" class="footer-icon" aria-label="GitHub">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.082-.729.082-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.304.76-1.604-2.665-.305-5.467-1.332-5.467-5.931 0-1.31.468-2.381 1.235-3.221-.123-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.3 1.23 1.02-.005 2.045-.138 3.003-.404 2.957.266 4.978.399 4.978.399 2.292-1.552 3.3-1.23 3.3-1.23.653 1.653.242 2.874.12 3.176.77.84 1.233 1.911 1.233 3.221 0 4.609-2.807 5.624-5.479 5.921.43.37.814 1.096.814 2.21 0 1.595-.015 2.877-.015 3.268 0 .319.216.694.825.576C20.565 21.796 24 17.298 24 12c0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </footer>
     </div>
-
-    <div class="tab-content" id="img-checker">
-        <div class="section">
-            <h2>Obrazki bez atrybutu alt</h2>
-            {% if seo_data.images_without_alt == 0 %}
-                <p>✅ Wszystkie obrazki mają atrybut alt.</p>
-            {% else %}
-                <p>❌ Liczba obrazków bez atrybutu alt: {{ seo_data.images_without_alt }}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="tab-content" id="lazy-loading">
-        <div class="section">
-            <h2>Lazy Loading</h2>
-            <p><span class="label">Liczba obrazków:</span> {{ seo_data.lazy_loading.img_count }}</p>
-            <p><span class="label">Obrazki z Lazy Loading:</span> {{ seo_data.lazy_loading.img_lazy_count }}</p>
-            <p><span class="label">Liczba iframe:</span> {{ seo_data.lazy_loading.iframe_count }}</p>
-            <p><span class="label">Iframe z Lazy Loading:</span> {{ seo_data.lazy_loading.iframe_lazy_count }}</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="webp-images">
-        <div class="section">
-            <h2>Użycie formatu WebP</h2>
-            <p><span class="label">Liczba obrazków WebP:</span> {{ seo_data.webp_images.webp_count }}</p>
-            <p><span class="label">Procent obrazków WebP:</span> {{ seo_data.webp_images.webp_percentage }}%</p>
-        </div>
-    </div>
-
-    <div class="tab-content" id="security">
-        <div class="section">
-            <h2>Bezpieczeństwo</h2>
-            <p><span class="label">Content Security Policy (CSP):</span> {{ "Tak" if seo_data.security.csp else "Nie" }}</p>
-            <p><span class="label">HTTP Strict Transport Security (HSTS):</span> {{ "Tak" if seo_data.security.hsts else "Nie" }}</p>
-            <p><span class="label">Certyfikat SSL:</span> {{ "Ważny" if seo_data.security.ssl_valid else "Nieważny" }}</p>
-            {% if seo_data.security.ssl_valid %}
-                <p><span class="label">Wystawca certyfikatu:</span> {{ seo_data.security.ssl_issuer }}</p>
-                <p><span class="label">Certyfikat ważny do:</span> {{ seo_data.security.ssl_expires_in }}</p>
-            {% endif %}
-            {% if seo_data.security.ssl_errors %}
-                <p><span class="label">Błędy SSL:</span></p>
-                <ul>
-                    {% for error in seo_data.security.ssl_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-    </div>
-
-    {% endif %}
-
-    <p><a href="/">🔙 Wróć do formularza</a></p>
 
     <!-- Skrypt do obsługi zakładek -->
+    <script src="/static/scripts.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab-button');
-            const contents = document.querySelectorAll('.tab-content');
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.sidemenu-item');
 
             tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const target = this.getAttribute('data-tab');
+                tab.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-tab');
 
-                    // Usuń aktywną klasę z wszystkich zakładek
-                    tabs.forEach(tab => tab.classList.remove('active'));
+                    // Jeśli element ma atrybut data-tab, przełącz zakładkę
+                    if (targetId) {
+                        // Przełącz kolory zakładek
+                        tabs.forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        this.classList.add('active');
 
-                    // Dodaj aktywną klasę do klikniętej zakładki
-                    this.classList.add('active');
+                        // Ukryj wszystkie treści
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.add('hidden');
+                            content.classList.remove('block');
+                        });
 
-                    // Ukryj wszystkie zawartości
-                    contents.forEach(content => content.style.display = 'none');
-
-                    // Pokaż zawartość odpowiadającą klikniętej zakładce
-                    document.getElementById(target).style.display = 'block';
+                        // Pokaż aktualną zakładkę
+                        const target = document.getElementById(targetId);
+                        if (target) {
+                            target.classList.remove('hidden');
+                            target.classList.add('block');
+                        }
+                    }
                 });
             });
         });
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            if (submenu && submenu.classList.contains('submenu')) {
+                submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function toggleSubmenu(button) {
+    const submenu = button.nextElementSibling;
+    if (submenu && submenu.classList.contains('submenu')) {
+        submenu.classList.toggle('open'); // Dodaj/usuń klasę open
+        button.classList.toggle('open'); // Obróć strzałkę
+    }
+}
+
+
     </script>
 </body>
 </html>

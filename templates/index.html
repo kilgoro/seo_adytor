@@ -1,25 +1,75 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audyt SEO</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="/static/style.css" rel="stylesheet"> <!-- Podłącz plik CSS -->
+    <link href="/static/footer.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/static/logo/favicon-onpageIQ.svg">
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
-        <h2 class="text-2xl font-bold mb-6">Audyt SEO</h2>
-        <form method="POST" class="space-y-4">
+
+<body class="flex flex-col min-h-screen bg-gray-100 bg-image">
+  <!-- Nagłówek -->
+  <header class="w-full  border-gray-300 p-1 flex justify-between items-center custom-header">
+    <div class="flex items-center">
+        <img src="/static/logo/logo-onpageiq.svg" alt="Logo" class="header img">
+    </div>
+    <div class="text-custom-orange">
+        Witaj, {{ current_user.id }}!
+    </div>
+</header>
+
+<div class="flex flex-col items-center justify-center  p-6 container-content dark:bg-gray-900">
+    <div class="max-w-md w-full bg-transparent p-8 rounded-custom border border-custom-orange text-custom-orange shadow-md text-center custom-styles">
+        <h2 class="mb-6">Audyt SEO</h2>
+        <form id="auditForm" class="space-y-4">
             <div>
-                <label for="url" class="block text-gray-700">Adres URL:</label>
-                <input type="text" id="url" name="url" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                <input type="text" id="url" name="url" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Wprowadź adres URL" required />
             </div>
-            <button type="submit" class="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Wykonaj audyt</button>
+            <div id="loading" class="text-gray-700 mb-2 hidden" style="display: none;">
+                Przetwarzanie<span class="dots"></span>
+            </div>
+            <button
+                type="submit"
+                id="auditButton"
+                class="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors custom-button"
+            >
+                Wykonaj audyt
+            </button>
         </form>
         <div class="mt-4">
-            <a href="{{ url_for('logout') }}" class="text-indigo-600 hover:underline">Wyloguj się</a>
+            <a href="{{ url_for('logout') }}" class="custom-link">Wyloguj się</a>
         </div>
     </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-text">
+        <p>
+            © <strong>PixelCraft – Patryk Łyjak</strong>
+        </p>
+    </div>
+    <div class="footer-icons">
+        <!-- Facebook -->
+        <a href="#" class="footer-icon" aria-label="Facebook">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.348C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.98c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.242h-1.92c-1.504 0-1.795.715-1.795 1.763v2.31h3.589l-.467 3.622h-3.12V24h6.116c.733 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z"/>
+            </svg>
+        </a>
+        <!-- GitHub -->
+        <a href="#" class="footer-icon" aria-label="GitHub">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.082-.729.082-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.304.76-1.604-2.665-.305-5.467-1.332-5.467-5.931 0-1.31.468-2.381 1.235-3.221-.123-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.3 1.23 1.02-.005 2.045-.138 3.003-.404 2.957.266 4.978.399 4.978.399 2.292-1.552 3.3-1.23 3.3-1.23.653 1.653.242 2.874.12 3.176.77.84 1.233 1.911 1.233 3.221 0 4.609-2.807 5.624-5.479 5.921.43.37.814 1.096.814 2.21 0 1.595-.015 2.877-.015 3.268 0 .319.216.694.825.576C20.565 21.796 24 17.298 24 12c0-6.627-5.373-12-12-12z"/>
+            </svg>
+        </a>
+    </div>
+</footer>
+
+    <script src="/static/scripts.js"></script>
 </body>
+
 </html>
