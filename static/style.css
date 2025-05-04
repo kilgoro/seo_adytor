@@ -1,82 +1,132 @@
-/* styles.css */
-body.bg-image {
-    background-image: url('./img/background-images-seo.jpg'); /* Ścieżka do obrazu */
-    background-size: cover; /* Tło pokrywa cały ekran */
-    background-position: center; /* Wycentrowanie tła */
-    background-repeat: no-repeat; /* Brak powtarzania tła */
-    position: relative; /* Wymagane dla ::before */
-}
+/* Globalne style */
 
-body.bg-image::before {
-    content: ""; /* Wymagane dla ::before */
-    position: absolute; /* Nakładka zajmuje cały obszar body */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Ciemna nakładka z przezroczystością 50% */
-    z-index: 1; /* Nakładka powinna być pod zawartością strony */
-}
-.bg-image .flex {
-    position: relative;
-    z-index: 1;
-}
-/* Ustawienie zawartości strony nad nakładką */
-.content {
-    position: relative;
-    z-index: 2; /* Zawartość powinna być nad nakładką */
-}
-
-/* styles.css tabs */
-body {
-    font-family: Arial, sans-serif;
+html, body {
+    height: 100vh;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    overflow: hidden; /* Prevent body from scrolling */
 }
 
+body {
+    display: flex;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1f2023;
+    color: #333; /* Ciemny tekst */
+}
+
+body.bg-image {
+    background-color: #1f2023;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.bg-custom-dark {
+    background-color: #1f2023;
+}
+
+/* Style dla content blocka */
+.tab-content {
+    background-color: #f0f0f0; /* Nieco ciemniejsze tło dla lepszego kontrastu */
+    border: 1px solid #d1d5db; /* Obramowanie dla wyraźniejszego oddzielenia */
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #333; /* Tekst ciemny */
+}
+
+/* Upewnij się, że elementy w content blocku mają odpowiedni kolor tekstu */
+.tab-content h2,
+.tab-content h3,
+.tab-content p,
+.tab-content li,
+.tab-content a,
+.tab-content span,
+.tab-content code {
+    color: inherit; /* Dziedzicz kolor z .tab-content */
+}
+
+/* Reszta stylów */
 h1 {
     text-align: center;
     margin-top: 20px;
+    color: #FCFCFC;
 }
 
-.tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    background-color: #fff;
-    border-bottom: 2px solid #ddd;
+.container-content {
+    height: calc(100vh - 55px);
 }
 
-.tab-button {
-    padding: 15px 20px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background-color: #fff;
-    cursor: pointer;
-    transition: border-color 0.3s;
+.custom-styles {
+    border-radius: 50px;
+    border: 1px solid #fcfcfc0f;
+    color: #FCFCFC;
+    background-color: #2E3033;
 }
 
-.tab-button.active {
-    border-bottom: 2px solid #007bff;
-    color: #007bff;
+.custom-link {
+    display: inline-block;
+    color: #FCFCFC;
+    background-color: transparent;
+    padding: 10px 35px;
+    border-radius: 100px;
+    border: 1px solid #fcfcfc14;
+    text-decoration: none;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+    width: 50%;
 }
 
-.tab-button:hover {
-    border-bottom: 2px solid #ddd;
+.custom-link:hover {
+    color: white;
+    background-color: #fcfcfc14;
 }
 
-.tab-content {
-    display: none;
-    padding: 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-top: none;
-    margin-bottom: 20px;
+.custom-link2 {
+    width: 15%;
 }
 
-.tab-content.active {
-    display: block;
+.custom-border {
+    border: 1px solid #EF8700;
+}
+
+.custom-button {
+    width: 50%;
+    padding: 10px 35px;
+    border-radius: 100px;
+    border: 1px solid #fcfcfc14;
+    color: #FCFCFC;
+    background-color: transparent;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+}
+
+.custom-button:hover {
+    color: white;
+    background-color: #fcfcfc14;
+}
+
+.custom-buttonlogout {
+    width: auto;
+    padding: 10px 35px;
+    border-radius: 100px;
+    border: 1px solid #fcfcfc14;
+    color: #fcfcfc;
+    background-color: transparent;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+    text-align: center;
+}
+
+.custom-buttonlogout:hover {
+    color: white;
+    background-color: #fcfcfc14;
 }
 
 .section {
@@ -93,4 +143,210 @@ h1 {
 
 .warning {
     color: orange;
+}
+
+header img {
+    width: auto;
+    height: auto;
+}
+
+header {
+    background-color: #1f2023;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+main {
+    padding: 1rem;
+    overflow-y: auto; /* Allow scrolling within main */
+}
+
+footer {
+    background-color: white;
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #ddd;
+}
+
+
+
+/* Styl dla elementu loading */
+#loading {
+    color: #f97316; /* Pomarańczowy kolor pasujący do Twojego designu */
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Styl dla animowanych kropek */
+.dots::after {
+    content: '.';
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+/* Animacja kropek */
+@keyframes dots {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+    100% { content: '.'; }
+}
+
+h2.mb-6 {
+    color: #FCFCFC;
+    font-size: 30px;
+    font-weight: 400;
+    text-align: center;
+}
+
+/* Inputs */
+input.mt-1.block.w-full.px-3.py-2.border.border-gray-300.rounded-md.shadow-sm {
+    background-color: #2E3033 !important;
+    color: #FCFCFC !important; /* For text readability */
+    border: 1px solid #fcfcfc14;
+}
+
+/* Styl dla elementu loading */
+#loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FCFCFC;
+    font-weight: bold;
+    text-align: center;
+    background-color: #2E3033;
+    border: 1px solid #fcfcfc14;
+    border-radius: 100px;
+    padding: 10px 20px;
+    width: 60%;
+    margin: 10px auto 0;
+}
+
+/* Styl dla koła ładowania */
+#loading::before {
+    content: '';
+    display: inline-block;
+    width: 20px; /* Rozmiar koła */
+    height: 20px; /* Rozmiar koła */
+    border: 3px solid #4f46e54d; /* Jasnoniebieskie, półprzezroczyste obramowanie dla całego koła */
+    border-top: 3px solid #4f46e5; /* Ciemnoniebieska górna krawędź dla efektu obracania */
+    border-radius: 50%; /* Okrągły kształt */
+    margin-right: 8px; /* Odstęp między kołem a tekstem */
+    animation: spin 1s linear infinite; /* Animacja obracania */
+}
+
+/* Animacja obracania koła */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Styl dla animowanych kropek */
+.dots::after {
+    content: '.';
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+/* Animacja kropek */
+@keyframes dots {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+    100% { content: '.'; }
+}
+
+/* Upewnij się, że klasa hidden działa */
+.hidden {
+    display: none !important;
+}
+
+/* Sidemenu Styles */
+.sidemenu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Dodane, aby strzałka była na prawo */
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid #fcfcfc14;
+    color: #d1d5db;
+    background-color: transparent;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    position: relative; /* Dodane, aby umożliwić pozycjonowanie strzałki */
+    font-size: 14px;
+}
+
+.sidemenu-background {
+    background-color: #18191c;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidemenu-item:hover {
+    color: white;
+    background-color: #fcfcfc14;
+}
+
+.sidemenu-item.active {
+    background-color: #4b5563;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Strzałki dla elementów z podmenu */
+.sidemenu-item.has-submenu::after {
+    content: '▶'; /* Strzałka w prawo */
+    font-size: 12px;
+    color: #d1d5db; /* Kolor strzałki pasujący do tekstu */
+    margin-left: auto; /* Ustawia strzałkę na prawo */
+    transition: transform 0.3s ease-in-out; /* Animacja obrotu */
+}
+
+.sidemenu-item.has-submenu.open::after {
+    transform: rotate(90deg); /* Obróć strzałkę w dół, jeśli podmenu jest otwarte */
+}
+
+/* Styl dla podmenu */
+.submenu {
+    display: none; /* Domyślnie ukryte */
+    padding-left: 16px; /* Wcięcie dla podmenu */
+    
+    overflow: hidden; /* Ukrywa zawartość podczas animacji */
+    max-height: 0; /* Animacja rozwijania */
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.submenu.open {
+    display: block; /* Widoczne, gdy ma klasę open */
+    max-height: 500px; /* Maksymalna wysokość podmenu */
+    padding: 8px 0 8px 16px; /* Dodatkowe padding */
+}
+
+.submenu li {
+    padding: 4px 0; /* Mniejsze padding dla elementów podmenu */
+}
+
+.icon {
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.badge {
+    margin-left: auto;
+    background-color: #6b7280;
+    color: #ffffff;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 9999px;
 }

@@ -1,0 +1,48 @@
+/* Footer styling to match the design */
+.footer {
+    width: auto;
+    background-color: #1f2023;
+    border-top: 1px solid #fcfcfc0f;
+    padding: 16px 24px; /* Padding for spacing */
+    display: flex;
+    justify-content: space-between; /* Align content on both ends */
+    align-items: center; /* Vertically center the content */
+    font-family: 'Inter', sans-serif;
+}
+
+/* Copyright text styling */
+.footer-text {
+    color: #FCFCFC; /* Dark gray text */
+    font-size: 14px; /* Smaller font size */
+}
+
+/* Social media icons container */
+.footer-icons {
+    display: flex;
+    gap: 16px; /* Spacing between icons */
+}
+
+/* Social media icon links */
+.footer-icon {
+    color: #FCFCFC; /* Dark gray icons */
+    transition: color 0.2s ease; /* Smooth transition for potential hover (not visible in screenshot) */
+}
+
+/* Icon size */
+.footer-icon svg {
+    width: 20px; /* Icon size */
+    height: 20px;
+}
+
+/* Remove margin-bottom since it's not needed in this layout */
+.footer-text p {
+    margin: 0;
+}
+
+/* Ensure no extra spacing on small screens */
+@media (max-width: 640px) {
+    .footer {
+        flex-direction: row; /* Keep it row-based as in the screenshot */
+        padding: 12px 16px; /* Slightly less padding on smaller screens */
+    }
+}
