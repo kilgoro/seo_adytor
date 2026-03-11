@@ -1,40 +1,23 @@
-SEO Adytor
-SEO Adytor to aplikacja do analizy on-page SEO stron internetowych. Narzędzie umożliwia szybkie sprawdzenie kluczowych elementów optymalizacji SEO na stronie, co może pomóc w poprawie widoczności w wynikach wyszukiwania.
+# SEO Auditor
 
-🔧 Technologie
+SEO Auditor is a web application designed for on-page SEO analysis. The tool allows users to quickly audit key optimization elements, helping to improve website visibility in search engine results.
 
-Backend: Python
+## 🔧 Technologies
 
-Frontend: Tailwind CSS
+* **Backend:** Python
+* **Frontend:** Tailwind CSS
 
-⚙️ Funkcje
+## ⚙️ Features
 
-Analiza tytułu strony, meta description i nagłówków
+* **Title & Meta Analysis:** Audit of page titles, meta descriptions, and metadata length.
+* **Header Structure:** Verification of H1–H6 tag hierarchy.
+* **Image Optimization:** Check for the presence of ALT tags in images.
+* **Content Evaluation:** Assessment of content length and basic on-page factors.
+* **SEO Insights:** Comprehensive overview of fundamental technical SEO aspects.
 
-Sprawdzenie obecności tagów ALT w obrazach
+## 🚀 Local Setup
 
-Weryfikacja struktury nagłówków H1–H6
-
-Ocena długości treści i metadanych
-
-Inne podstawowe aspekty on-page SEO
-
-🚀 Uruchomienie lokalne
-Sklonuj repozytorium:
-
-
-
-git clone https://github.com/kilgoro/seo_adytor.git
-cd seo_adytor
-
-Zainstaluj zależności:
-
-
-
-pip install -r requirements.txt
-Uruchom aplikację:
-
-
-python main.py
-
-Otwórz w przeglądarce: http://localhost:8000 (adres może się różnić w zależności od implementacji)
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/kilgoro/seo_adytor.git](https://github.com/kilgoro/seo_adytor.git)
+   cd seo_adytor
